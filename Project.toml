@@ -1,0 +1,13 @@
+name = "SixDOF"
+uuid = "304da4c3-06e5-42c8-b67d-e82ababee5fb"
+authors = ["Andrew Ning <aning@byu.edu>"]
+version = "0.1.0"
+
+[compat]
+julia = "1"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
