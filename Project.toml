@@ -3,6 +3,9 @@ uuid = "304da4c3-06e5-42c8-b67d-e82ababee5fb"
 authors = ["Andrew Ning <aning@byu.edu>"]
 version = "0.1.0"
 
+[deps]
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+
 [compat]
 julia = "1"
 
