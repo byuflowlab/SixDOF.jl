@@ -3,13 +3,20 @@ module SixDOF
 import LinearAlgebra: norm, cross
 
 export Control, MassProp, Reference
-export AeroModel, PropulsionModel, AtmosphereModel
-export StabilityDeriv, MotorPropBatteryDataFit, ConstantAtmosphere
+export AeroModel, PropulsionModel, InertialModel, AtmosphereModel
+export StabilityDeriv, MotorPropBatteryDataFit, UniformGravitationalField, ConstantAtmosphere
+export CO, COUNTER, COCOUNTER
 export sixdof!
 
 
 # ------ General Structs -------
 
+"""
+    State(x, y, z, phi, theta, psi, u, v, w, p, q, r)
+
+State of the aircraft: positions in inertial frame, euler angles,
+velocities in body frame, angular velocities in body frame.
+"""
 struct State{TF}
     x::TF  # position (inertial frame)
     y::TF
@@ -25,6 +32,12 @@ struct State{TF}
     r::TF
 end
 
+"""
+    Control(de, dr, da, df, throttle)
+
+Define the control settings: delta elevator, delta rudder, delta aileron, 
+delta flaps, and throttle.
+"""
 struct Control{TF}
     de::TF  # elevator
     dr::TF  # rudder
@@ -33,12 +46,23 @@ struct Control{TF}
     throttle::TF
 end
 
+"""
+    MassProp(m, Ixx, Iyy, Izz, Ixz, Ixy, Iyz)
+
+Mass and moments of inertia in the body frame.
+Ixx = int(y^2 + z^2, dm)
+Ixz = int(xz, dm)
+
+Most aircraft are symmetric about y and so there is a convenience method 
+to specify only the nonzero components.
+MassProp(m, Ixx, Iyy, Izz, Ixz)
+"""
 struct MassProp{TF}
     m::TF
-    Ixx::TF  # int(y^2 + z^2, dm)
+    Ixx::TF 
     Iyy::TF
     Izz::TF
-    Ixz::TF  # int(xz, dm)
+    Ixz::TF 
     Ixy::TF
     Iyz::TF
 end
@@ -47,6 +71,11 @@ end
 MassProp(m, Ixx, Iyy, Izz, Ixz) = MassProp(m, Ixx, Iyy, Izz, Ixz, zero(Ixx), zero(Ixx))  
 
 
+"""
+    Reference(S, b, c)
+
+The reference area, span, and chord used in the aerodynamic computations.
+"""
 struct Reference{TF}
     S::TF  # area
     b::TF  # span
@@ -61,43 +90,98 @@ end
 abstract type AtmosphereModel end
 
 """
+    wind(model::AtmosphereModel, state)
+
+Compute wind velocities.
+
 **Returns**
-- u, v, w: wind velocities in inertial frame
-- ug, vg, wg: gust velocities in body frame (just a convenience to allow some velocities in body frame)
+- Wi: wind velocities in inertial frame
+- Wb: gust velocities in body frame (just a convenience to allow some velocities in body frame)
 """
 function wind(model::AtmosphereModel, state)
     warn("wind function not implemented for AtmosphereModel")
-    # return u, v, w, ug, vg, wg
+    Wi = [0.0, 0.0, 0.0]
+    Wb = [0.0, 0.0, 0.0]
+    return Wi, Wb
 end
 
+"""
+    properties(model::AtmosphereModel, state)
+
+Compute atmospheric density and the speed of sound.
+"""
 function properties(model::AtmosphereModel, state)
     warn("properties function not implemented for AtmosphereModel")
-    # return rho, asound
+    rho = 1.225  # sea-level properties
+    asound = 340.3
+    return rho, asound
 end
 
+"""
+    gravity(model::AtmosphereModel, state)
+
+Compute the local acceleration of gravity.
+"""
 function gravity(model::AtmosphereModel, state)
     warn("gravity function not implemented for AtmosphereModel")
-    # return g
+    g = 9.81
+    return g
 end
+
 
 # ----
 
 abstract type AeroModel end
 
-function aeroforces(model::AeroModel, atm::AtmosphereModel, state, control, ref)
+"""
+    aeroforces(model::AeroModel, atm::AtmosphereModel, state::State, control::Control, mp::MassProp, ref::Reference)
+
+Compute the aerodynamic forces and moments in the body frame.
+return F, M
+"""
+function aeroforces(model::AeroModel, atm::AtmosphereModel, state::State, control::Control, mp::MassProp, ref::Reference)
     warn("aeroforces function not implemented for AeroModel")
-    # return F, M (in body frame)
+    # forces and moments in body frame
+    F = [0.0, 0.0, 0.0]
+    M = [0.0, 0.0, 0.0]
+    return F, M
 end
 
 # ----
 
 abstract type PropulsionModel end
 
-function propulsionforces(model::PropulsionModel, atm::AtmosphereModel, state, control, ref)
+"""
+    propulsionforces(model::PropulsionModel, atm::AtmosphereModel, state::State, control::Control, mp::MassProp, ref::Reference)
+
+Compute the propulsive forces and moments in the body frame.
+return F, M
+"""
+function propulsionforces(model::PropulsionModel, atm::AtmosphereModel, state::State, control::Control, mp::MassProp, ref::Reference)
     warn("propulsionforces function not implemented for PropulsionModel")
-    # return F, M (in body frame)
+    # forces and moments in body frame
+    F = [0.0, 0.0, 0.0]
+    M = [0.0, 0.0, 0.0]
+    return F, M
 end
 
+# ----
+
+abstract type InertialModel end
+
+"""
+    gravityforces(model::InertialModel, atm::AtmosphereModel, state::State, control::Control, mp::MassProp, ref::Reference)
+
+Compute the gravitational forces and moments in the body frame.
+return F, M
+"""
+function gravityforces(model::InertialModel, atm::AtmosphereModel, state::State, control::Control, mp::MassProp, ref::Reference)
+    warn("gravityforces function not implemented for InertialModel")
+    # forces and moments in body frame
+    F = [0.0, 0.0, 0.0]
+    M = [0.0, 0.0, 0.0]
+    return F, M
+end
 
 
 # -----------------------------
@@ -162,14 +246,12 @@ function windaxes(atm::AtmosphereModel, state)
 
     # velocity vectors
     Vb = [state.u, state.v, state.w]
-    u, v, w, ug, vg, wg = wind(atm, state)
-    Vwi = [u, v, w]  # wind in inertial frame
-    Vwb = [ug, vg, wg]  # additional wind in body frame
+    Wi, Wb = wind(atm, state)
 
     Rib = inertialtobody(state)
 
     # relative wind
-    Vrel = Vb - (Rib*Vwi + Vwb)
+    Vrel = Vb - (Rib*Wi + Wb)
 
     # airspeed
     Va = norm(Vrel)
@@ -185,22 +267,30 @@ function windaxes(atm::AtmosphereModel, state)
 end
 
 
-function gravitationalforces(mp, atmmodel, state)
-
-    W = mp.m * gravity(atmmodel, state)
-    ct, cp = cos.([state.theta, state.phi])
-    st, sp = sin.([state.theta, state.phi])
-
-    Fg = W*[-st, ct*sp, ct*cp]
-
-    return Fg
-end
-
 # ----------------------------------------------------
 
 
 # ------- Some Default Interface Implementations -----
 
+"""
+    StabilityDeriv(CL0, CLalpha, CLq, CLM, CLdf, CLde, alphas, 
+        CD0, U0, exp_Re, e, Mcc, CDdf, CDde, CDda, CDdr, 
+        CYbeta, CYp, CYr, CYda, CYdr, Clbeta, 
+        Clp, Clr, Clda, Cldr, 
+        Cm0, Cmalpha, Cmq, CmM, Cmdf, Cmde, 
+        Cnbeta, Cnp, Cnr, Cnda, Cndr)
+
+Stability derivatives of the aircraft.  Most are self explanatory if you are
+familiar with stability derivatives (e.g., CLalpha is dCL/dalpha or the lift curve slope).
+Some less familiar ones include
+- M: Mach number
+- alphas: the angle of attack for stall
+- U0: the speed for the reference Reynolds number CD0 was computed at
+- exp_Re: the coefficient in the denominator of the skin friction coefficient (0.5 laminar, 0.2 turbulent)
+- e: Oswald efficiency factor
+- Mcc: crest critical Mach number (when compressibility drag rise starts)
+
+"""
 struct StabilityDeriv{TF} <: AeroModel
     CL0::TF
     CLalpha::TF
@@ -208,14 +298,12 @@ struct StabilityDeriv{TF} <: AeroModel
     CLM::TF
     CLdf::TF
     CLde::TF
-    CLmax::TF
-    CLmin::TF
+    alphas::TF  # TODO: should probably do in terms of CLmax
 
     CD0::TF
-    U0::TF  # velocity corresponding to Reynolds number of CD0
-    exp_Re::TF  # exponent for Reynolds number scaling. typical values: exp_Re = -0.5 laminar, -0.2 turbulent
+    U0::TF  # velocity corresponding to Reynolds number of CD0  (TODO: rethink this)
+    exp_Re::TF  # exponent for Reynolds number scaling. typical values: exp_Re = 0.5 laminar, 0.2 turbulent
     e::TF  # Oswald efficiency factor
-    Mfactor::TF  # coefficient in front of compressibility drag rise.  Typical value = 20
     Mcc::TF  # crest-critical Mach number when compressibility drag rise starts (quartic)
     CDdf::TF
     CDde::TF
@@ -252,7 +340,7 @@ end
 """
 A simple (mostly) linear aerodynamics model
 """
-function aeroforces(sd::StabilityDeriv, atm::AtmosphereModel, state, control, ref)
+function aeroforces(sd::StabilityDeriv, atm, state, control, ref, mp)
 
     # airspeed, angle of attack, sideslip
     Va, alpha, beta = windaxes(atm, state)
@@ -275,13 +363,16 @@ function aeroforces(sd::StabilityDeriv, atm::AtmosphereModel, state, control, re
     # lift
     CL = sd.CL0 + sd.CLalpha*alpha + sd.CLq*q *ref.c/(2*Va) + sd.CLM*Mach
         + sd.CLdf*df + sd.CLde*de
-    CL = min(CL, sd.CLmax)
-    CL = max(CL, sd.CLmin)
+    
+    em = exp(-50*(alpha - sd.alphas))
+    ep = exp(50*(alpha + sd.alphas))
+    sigma = (1 + em + ep)/((1 + em)*(1 + ep))
+    CL = (1- sigma)*CL + sigma * 2 * sign(alpha)*sin(alpha)^2*cos(alpha)
 
     # drag
     CDp = sd.CD0*(Va/sd.U0)^sd.exp_Re  
     CDi = CL^2/(pi*(ref.b^2/ref.S)*sd.e)
-    CDc = sd.Mfactor*(Mach - sd.Mcc)^4 
+    CDc = Mach < sd.Mcc ? 0.0 : 20*(Mach - sd.Mcc)^4 
 
     CD = CDp + CDi + CDc + abs(sd.CDdf*df) + abs(sd.CDde*de) + abs(sd.CDda*da) + abs(sd.CDdr*dr)
 
@@ -307,10 +398,26 @@ function aeroforces(sd::StabilityDeriv, atm::AtmosphereModel, state, control, re
     return F, M
 end
 
+@enum PropType CO=1 COUNTER=-1 COCOUNTER=0
 
-struct MotorPropBatteryDataFit{TF} <: PropulsionModel
-    # CT = CT2*J2 + CT2*J + CT0
-    # CQ = CQ2*J2 + CQ2*J + CQ0
+"""
+    MotorPropBatteryDataFit(CT2, CT1, CT0, CQ2, CQ1, CQ0, D, num, type,
+        R, Kv, i0, voltage)
+
+**Inputs**
+- CT2, CT1, CT0: quadratic fit to propeller thrust coefficient of form: CT = CT2*J2 + CT1*J + CT0
+- CQ2, CQ1, CQ0: quadratic fit to propeller torque coefficient of form: CQ = CQ2*J2 + CQ1*J + CQ0
+- D: propeller diameter
+- num: number of propellers
+- type: CO (torques add), COUNTER (torques add but with minus sign), COCOUNTER (no torque, they cancel out)
+- R: motor resistance
+- Kv: motor Kv
+- i0: motor no-load current
+- voltage: battery voltage
+"""
+struct MotorPropBatteryDataFit{TF, TI, PropType} <: PropulsionModel
+    # CT = CT2*J2 + CT1*J + CT0
+    # CQ = CQ2*J2 + CQ1*J + CQ0
     CT2::TF  # prop data fit
     CT1::TF
     CT0::TF
@@ -318,6 +425,8 @@ struct MotorPropBatteryDataFit{TF} <: PropulsionModel
     CQ1::TF
     CQ0::TF
     D::TF  # prop diameter
+    num::TI
+    type::PropType
 
     R::TF  # motor resistance
     Kv::TF  # motor Kv
@@ -326,7 +435,7 @@ struct MotorPropBatteryDataFit{TF} <: PropulsionModel
     voltage::TF  # battery voltage
 end
 
-function propulsionforces(prop::MotorPropBatteryDataFit, atm::AtmosphereModel, state, control, ref)
+function propulsionforces(prop::MotorPropBatteryDataFit, atm, state, control, ref, mp)
 
     # airspeed, angle of attack, sideslip
     Va, _, _ = windaxes(atm, state)
@@ -350,20 +459,36 @@ function propulsionforces(prop::MotorPropBatteryDataFit, atm::AtmosphereModel, s
     CT = prop.CT0 + prop.CT1*J + prop.CT2*J^2
     CQ = prop.CQ0 + prop.CQ1*J + prop.CQ2*J^2
 
-    T = CT * rho * n^2 * D^4
-    Q = CQ * rho * n^2 * D^5
+    T = prop.num * CT * rho * n^2 * D^4
+    Q = prop.num * CQ * rho * n^2 * D^5 * Int(prop.type)
 
-    return [T, 0, 0], [Q, 0, 0]  # TODO: sign for torque is ambiguous, could be either, should allow it to be specified
+    return [T, 0, 0], [Q, 0, 0] 
 end
 
 
+struct UniformGravitationalField <: InertialModel end  # center of mass and center of gravity are the same
+
+function gravityforces(model::UniformGravitationalField, atm, state, control, ref, mp)
+
+    W = mp.m * gravity(atm, state)
+    ct, cp = cos.([state.theta, state.phi])
+    st, sp = sin.([state.theta, state.phi])
+
+    Fg = W*[-st, ct*sp, ct*cp]
+    Mg = [zero(W), zero(W), zero(W)]  # no gravitational moment
+
+    return Fg, Mg
+end
+
+
+"""
+    ConstantAtmosphere(Wi, Wb, rho, asound, g)
+
+Constant atmospheric properties.
+"""
 struct ConstantAtmosphere{TF} <: AtmosphereModel
-    u::TF
-    v::TF
-    w::TF
-    ug::TF
-    vg::TF
-    wg::TF
+    Wi::Vector{TF}
+    Wb::Vector{TF}
     rho::TF
     asound::TF
     g::TF
@@ -371,7 +496,7 @@ end
 
 
 function wind(atm::ConstantAtmosphere, state)
-    return atm.u, atm.v, atm.w, atm.ug, atm.vg, atm.wg
+    return atm.Wi, atm.Wb
 end
 
 function properties(atm::ConstantAtmosphere, state)
@@ -386,26 +511,34 @@ end
 
 # ------------- main functions (public) --------------
 
+"""
+    sixdof!(ds, s, params, time)
+
+dynamic and kinematic ODEs.  Follows format used in DifferentialEquations package.
+- s = x, y, z, phi, theta, psi, u, v, w, p, q, r (same order as State)
+- params = control, massproperties, reference, aeromodel, propmodel, inertialmodel, atmmodel
+"""
 function sixdof!(ds, s, params, time)
 
     x, y, z, phi, theta, psi, u, v, w, p, q, r = s
-    control, mp, ref, aeromodel, propmodel, atmmodel = params
+    control, mp, ref, aeromodel, propmodel, inertialmodel, atmmodel = params
 
     # --------- forces and moments ---------
     state = State(s...)
 
     # aerodynamics
-    Fa, Ma = aeroforces(aeromodel, atmmodel, state, control, ref)
+    Fa, Ma = aeroforces(aeromodel, atmmodel, state, control, ref, mp)
 
     # propulsion
-    Fp, Mp = propulsionforces(propmodel, atmmodel, state, control, ref)
+    Fp, Mp = propulsionforces(propmodel, atmmodel, state, control, ref, mp)
 
     # weight
-    Fg = gravitationalforces(mp, atmmodel, state)
-    
+    Fg, Mg = gravityforces(inertialmodel, atmmodel, state, control, ref, mp)
+
     # total forces and moments
     F = Fa + Fp + Fg
-    M = Fa + Mp
+    M = Ma + Mp + Mg
+
     # --------------------------------------
 
 
