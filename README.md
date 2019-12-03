@@ -12,8 +12,8 @@ Author: Andrew Ning
 The dynamics implementation is quite standard and could be used for any rigid body moving through 3D space, although our usage (and conventions) are for aircraft.  The main limitation of the current model is that it is based on Euler angles, rather than quaternions, but that again is because of our applications.  All forces/moments and the atmosphere model are abstract types to allow for user-defined models.  The default implementations of these abstract types include:
 - aerodynamics: a standard aircdraft stability/control-derivative based model (the drag model is more detailed, but that generally has a negligible impact on the dynamics).
 - propulsion: an electric motor/propeller/battery model using a first-order motor model and nondimensional propeller thrust and torque curves.
-- gravity: center of mass and center of gravity are coincident.
-- atmosphere: constant gravitational field across the body.
+- gravity: center of mass and center of gravity are coincident (constant gravitational field across the body).
+- atmosphere: constant properties throughout trajectory.
 
 ### Install
 
