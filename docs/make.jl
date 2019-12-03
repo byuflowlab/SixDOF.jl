@@ -4,10 +4,10 @@ makedocs(;
     modules=[SixDOF],
     format=Documenter.HTML(),
     pages=[
-        "Home" => "index.md",
+        "Guide" => "guide.md",
         "Theory" => "theory.md",
     ],
-    repo="https://github.com/andrewning/SixDOF.jl/blob/{commit}{path}#L{line}",
+    repo="https://github.com/byuflowlab/SixDOF.jl/blob/{commit}{path}#L{line}",
     sitename="SixDOF.jl",
     authors="Andrew Ning <aning@byu.edu>",
     # assets=String[],

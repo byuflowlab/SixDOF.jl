@@ -1,8 +1,3 @@
 # SixDOF.jl
 
-```@index
-```
-
-```@autodocs
-Modules = [SixDOF]
-```
+This documentation contains a guide walkthrough and theory derivation.

@@ -272,6 +272,8 @@ The parasitic drag is the sum of these three components plus that from control d
 
 ### Propulsion
 
+TODO
+
 [^1]: The earth is not, strictly speaking, an inertial frame since it is rotating and so objects on the surface are accelerating.  However, for our applications including the inertial effect is negligible.
 [^2]: Small Unmanned Aircraft: Theory and Practice, Randal W. Beard and Timothy W. McLain, Princeton University Press, 2012.
 [^3]: Actually it acts about the center of gravity, but in practice these are the same.  The only time we'd see a noticeable difference is if the vehicle was extremely large, or if this was a satellite then the very small gravitational moments might be important in its dynamics.
