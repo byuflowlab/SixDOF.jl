@@ -2,6 +2,10 @@
 
 ## Basic Usage
 
+```@setup zagi
+using PyPlot
+```
+
 First, we import the module.
 
 ```@example zagi
@@ -211,7 +215,7 @@ nothing # hide
 
 We can plot the results.  For example the linear positions and velocities.  The y-components are not plotted in this case, because they are all zero as there are no control deflections or wind that would cause lateral motion in this example.
 ```@example zagi
-using PyPlot;
+using PyPlot
 
 figure()
 plot(sol.t, sol[1, :])
@@ -232,7 +236,7 @@ figure()
 figure()
 plot(sol.t, sol[9, :])
 xlabel("time (s)")
-ylabel("w body velocity (m/s)");
+ylabel("w body velocity (m/s)")
 savefig("w.svg"); nothing # hide
 ```
 ![](x.svg)
