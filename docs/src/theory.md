@@ -272,7 +272,53 @@ The parasitic drag is the sum of these three components plus that from control d
 
 ### Propulsion
 
-TODO
+The default implementation uses a first-order electric [motor model](http://web.mit.edu/drela/Public/web/qprop/motor1_theory.pdf).  The torque of the motor is given by:
+```math
+Q = \frac{1}{K_v}\left(\frac{1}{R}\left(v_b - \frac{\Omega}{K_v} \right) - i_0 \right)
+```
+where ``K_v`` is the motor velocity constant, ``R`` is the motor resistance, ``v_b`` is the battery voltage, ``\Omega`` is the shaft rotation speed, and ``i_o`` is the no-load current.
+
+Propeller aerodynamic behavior cannot be easily predicted from a simple analytic model, but we can fit data that is generated empirically or from a higher fidelity numerical model.  If the data is tabulated in a nondimensional way that it can be specified in a compact way and used across a range of conditions.  This [site](https://m-selig.ae.illinois.edu/props/propDB.html), for example, contains wind tunnel measurements for a variety of propellers used on small UAVs. The thrust coefficient and torque coefficient can be fit with a quadratic curve, as a function of advance ratio, as follows:
+```math
+\begin{aligned}
+C_T &= C_{T2} J^2 + C_{T1} J + C_{T0}\\
+C_Q &= C_{Q2} J^2 + C_{Q1} J + C_{Q0}
+\end{aligned}
+```
+The advance ratio is given by:
+```math
+J = \frac{V_a}{n D}
+```
+where ``n`` is revolutions/sec or ``n = \Omega/(2\pi)``
+
+The propeller torque is then given by the definition of the torque coefficient:
+```math
+Q = C_Q \rho n^2 D^5
+```
+We can equate the torque from the motor to that from the propeller and solve for the rotation speed of the motor/prop system:
+```math
+\left[C_{Q2} \left(\frac{V_a 2\pi}{\Omega D}\right)^2 + C_{Q1} \frac{V_a 2\pi}{\Omega D} + C_{Q0}\right] \rho \frac{\Omega^2}{4 \pi^2} D^5 = \frac{1}{K_v}\left(\frac{1}{R}\left(v_b - \frac{\Omega}{K_v} \right) - i_0 \right)
+```
+
+With a little algebra we can write this as an quadratic equation:
+```math
+a \Omega^2 + b \Omega + c = 0
+```
+where
+```math
+\begin{aligned}
+a &= \frac{C_{Q0} \rho D^5}{4 \pi^2}\\
+b &= \frac{C_{Q1} \rho V_a D^4}{2 \pi} + \frac{1}{R K_v}\\
+c &= C_{Q2} \rho V_a^2 D^3 - \frac{1}{K_v}\left(\frac{v_b}{R} - i_0\right)
+\end{aligned}
+```
+We solve this using the quadratic formula, nothing that only the positive root is physical:
+```math
+\Omega = \frac{-b + \sqrt{b^2 - 4 a c}}{2 a}
+```
+With the rotation speed known, we can then compute torque and thrust from the propeller equations.
+
+---
 
 [^1]: The earth is not, strictly speaking, an inertial frame since it is rotating and so objects on the surface are accelerating.  However, for our applications including the inertial effect is negligible.
 [^2]: Small Unmanned Aircraft: Theory and Practice, Randal W. Beard and Timothy W. McLain, Princeton University Press, 2012.

@@ -1,5 +1,7 @@
 # Guide
 
+## Basic Usage
+
 First, we import the module.
 
 ```@example zagi
@@ -237,3 +239,20 @@ savefig("w.svg"); nothing # hide
 ![](z.svg)
 ![](u.svg)
 ![](w.svg)
+
+## Additional Helper Functions
+
+A few other helper functions exist.  These first three create rotation matrices from one coordinate system to the body frame.  All of these rotation matrices are orthogonal so the inverse of the matrix is just its transpose.
+
+```@docs
+SixDOF.inertialtobody
+SixDOF.windtobody
+SixDOF.stabilitytobody
+```
+
+Another function extracts airspeed, angle of attack, and sideslip from the body motion and wind.
+
+```@docs
+SixDOF.windaxes
+```
+

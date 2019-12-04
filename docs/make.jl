@@ -12,3 +12,7 @@ makedocs(;
     authors="Andrew Ning <aning@byu.edu>",
     # assets=String[],
 )
+
+deploydocs(
+    repo = "github.com/byuflowlab/SixDOF.jl.git",
+)
