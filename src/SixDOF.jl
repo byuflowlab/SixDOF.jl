@@ -193,6 +193,8 @@ end
 
 
 """
+    inertialtobody(state)
+
 Construct a rotation matrix from inertial frame to body frame
 
 The assumed order of rotation is 
@@ -226,6 +228,13 @@ function inertialtobody(state)
 end
 
 
+"""
+    windtobody(alpha, beta)
+
+Rotation matrix from wind frame to body frame.
+- alpha: angle of attack
+- beta: sideslip angle
+"""
 function windtobody(alpha, beta)
 
     ca, cb = cos.([alpha, beta])
@@ -238,11 +247,31 @@ function windtobody(alpha, beta)
     return Rwb
 end
 
+"""
+    stabilitytobody(alpha, beta)
+
+Rotation matrix from stability frame to body frame.
+- alpha: angle of attack
+"""
+function stabilitytobody(alpha)
+
+    ca = cos(alpha)
+    sa = sin(alpha)
+
+    Rsb = [ca  0.0  -sa;
+           0.0 1.0  0.0;
+           sa  0.0  ca]
+
+    return Rsb
+end
+
 
 """
+    windaxes(atm::AtmosphereModel, state)
+
 Compute relative velocity in wind axes (airspeed, aoa, sideslip)
 """
-function windaxes(atm::AtmosphereModel, state)
+function windaxes(atm, state)
 
     # velocity vectors
     Vb = [state.u, state.v, state.w]
@@ -372,7 +401,7 @@ function aeroforces(sd::StabilityDeriv, atm, state, control, ref, mp)
     # drag
     CDp = sd.CD0*(Va/sd.U0)^sd.exp_Re  
     CDi = CL^2/(pi*(ref.b^2/ref.S)*sd.e)
-    CDc = Mach < sd.Mcc ? 0.0 : 20*(Mach - sd.Mcc)^4 
+    CDc = (Mach < sd.Mcc) ? 0.0 : 20*(Mach - sd.Mcc)^4 
 
     CD = CDp + CDi + CDc + abs(sd.CDdf*df) + abs(sd.CDde*de) + abs(sd.CDda*da) + abs(sd.CDdr*dr)
 
@@ -447,8 +476,8 @@ function propulsionforces(prop::MotorPropBatteryDataFit, atm, state, control, re
 
     # determine torque for motor/prop match (quadratic equation)
     a = rho*D^5/(2*pi)^2 * prop.CQ0
-    b = rho*D^4/(2*pi) * prop.CQ1*Va + 1.0/prop.R
-    c = rho*D^3*prop.CQ2*Va - control.throttle*prop.voltage/(prop.R*prop.Kv) + prop.i0/prop.Kv
+    b = rho*D^4/(2*pi)*Va * prop.CQ1 + 1.0/(prop.R*prop.Kv)
+    c = rho*D^3*Va^2 * prop.CQ2 - control.throttle*prop.voltage/(prop.R*prop.Kv) + prop.i0/prop.Kv
     Omega = (-b + sqrt(b^2 - 4*a*c))/(2*a)
 
     # advance ratio
