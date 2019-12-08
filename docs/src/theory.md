@@ -318,7 +318,7 @@ We solve this using the quadratic formula, nothing that only the positive root i
 ```
 With the rotation speed known, we can then compute torque and thrust from the propeller equations.
 
----
+
 
 [^1]: The earth is not, strictly speaking, an inertial frame since it is rotating and so objects on the surface are accelerating.  However, for our applications including the inertial effect is negligible.
 [^2]: Small Unmanned Aircraft: Theory and Practice, Randal W. Beard and Timothy W. McLain, Princeton University Press, 2012.
