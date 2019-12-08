@@ -15,7 +15,7 @@ jobs:
       matrix:
         julia-version: ['1.0', '1.3']
         julia-arch: [x64, x86]
-        os: [ubuntu-latest, macOS-latest]
+        os: [ubuntu-latest, windows-latest, macOS-latest]
         exclude:
           - os: macOS-latest
             julia-arch: x86
@@ -25,5 +25,4 @@ jobs:
       - uses: julia-actions/setup-julia@v1
         with:
           version: ${{ matrix.julia-version }}
-      - run: julia -e 'using Pkg; Pkg.add(PackageSpec(url="https://github.com/byuflowlab/FLOWMath.jl"))'
       - uses: julia-actions/julia-runtest@master
