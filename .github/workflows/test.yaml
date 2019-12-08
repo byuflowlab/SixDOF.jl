@@ -4,6 +4,7 @@ on:
   push:
     paths:
     - '**.jl'
+    - '**.toml'
   pull_request:
 
 
