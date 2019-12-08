@@ -94,7 +94,7 @@ f = wrapper(x)
 
 J = ForwardDiff.jacobian(wrapper, x)
 J2 = ReverseDiff.jacobian(wrapper, x)
-J3 = centraldiff(wrapper, x)
+# J3 = centraldiff(wrapper, x)
 
 # diff = J - J3
 # idx = (diff .!= 0.0)
