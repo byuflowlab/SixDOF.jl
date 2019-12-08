@@ -2,6 +2,7 @@
 
 <!-- [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://andrewning.github.io/SixDOF.jl/stable) -->
 [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://flow.byu.edu/SixDOF.jl/dev)
+![](https://github.com/byuflowlab/SixDOF.jl/workflows/Run%20tests/badge.svg)
 
 *A nonlinear six degree of freedom dynamics model, particularly for aircraft*
 
