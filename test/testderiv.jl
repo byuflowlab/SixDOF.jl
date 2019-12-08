@@ -110,7 +110,7 @@ J2 = ReverseDiff.jacobian(wrapper, x)
 
 diff = J - J2
 idx = (diff .!= 0.0)
-rerr = diff[idx]./J3[idx]
+rerr = diff[idx]./J[idx]
 # println(maximum(abs.(rerr)))
 @test maximum(abs.(rerr)) < 1e-7
 
