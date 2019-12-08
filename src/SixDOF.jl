@@ -515,9 +515,9 @@ end
 
 Constant atmospheric properties.
 """
-struct ConstantAtmosphere{TF} <: AtmosphereModel
-    Wi::Vector{TF}
-    Wb::Vector{TF}
+struct ConstantAtmosphere{TF, TV<:AbstractVector{TF}} <: AtmosphereModel
+    Wi::TV
+    Wb::TV
     rho::TF
     asound::TF
     g::TF

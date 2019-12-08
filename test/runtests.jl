@@ -1,6 +1,6 @@
 using SixDOF
 using Test
 
-@testset "SixDOF.jl" begin
-    # Write your own tests here.
+@testset "Forward/Reverse Diff" begin
+    include("testderiv.jl")
 end
