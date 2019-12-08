@@ -1,7 +1,7 @@
 using SixDOF
 import ForwardDiff
 import ReverseDiff
-using FLOWMath: centraldiff
+# using FLOWMath: centraldiff
 
 
 function wrapper(x)
@@ -96,21 +96,22 @@ J = ForwardDiff.jacobian(wrapper, x)
 J2 = ReverseDiff.jacobian(wrapper, x)
 J3 = centraldiff(wrapper, x)
 
-diff = J - J3
-idx = (diff .!= 0.0)
-rerr = diff[idx]./J3[idx]
-
-@test maximum(abs.(rerr)) < 1e-5
-
-diff = J2 - J3
-idx = (diff .!= 0.0)
-rerr = diff[idx]./J3[idx]
-
-@test maximum(abs.(rerr)) < 1e-5
-
-# diff = J - J2
+# diff = J - J3
 # idx = (diff .!= 0.0)
 # rerr = diff[idx]./J3[idx]
+
+# @test maximum(abs.(rerr)) < 1e-5
+
+# diff = J2 - J3
+# idx = (diff .!= 0.0)
+# rerr = diff[idx]./J3[idx]
+
+# @test maximum(abs.(rerr)) < 1e-5
+
+diff = J - J2
+idx = (diff .!= 0.0)
+rerr = diff[idx]./J3[idx]
 # println(maximum(abs.(rerr)))
+@test maximum(abs.(rerr)) < 1e-7
 
 # @code_warntype wrapper(x)
