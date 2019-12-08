@@ -25,8 +25,7 @@ pkg> add https://github.com/byuflowlab/SixDOF.jl
 ### Run Unit Tests
 
 ```julia
-pkg> activate .
-pkg> test
+pkg> test SixDOF
 ```
 
 ### Getting Started
