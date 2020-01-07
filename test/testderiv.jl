@@ -13,13 +13,13 @@ function wrapper(x)
     sd = StabilityDeriv(x[9:45]...)
     propulsion = MotorPropBatteryDataFit(x[46], x[47], x[48], x[49], x[50], x[51], x[52], num, type, x[53:56]...)
     atm = ConstantAtmosphere(x[57:59], x[60:62], x[63], x[64], x[65])
-    control = Control(x[66:70]...)
+    controller = ConstantController(x[66:70]...)
     inertial = UniformGravitationalField()
     Vinf = 10.0
     alpha = 3.0*pi/180
     s0 = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Vinf*cos(alpha), 0.0, Vinf*sin(alpha), 0.0, 0.0, 0.0]
     time = 1.0
-    params = control, mp, ref, sd, propulsion, inertial, atm
+    params = mp, ref, sd, propulsion, inertial, atm, controller
     ds = zeros(eltype(x[1]), 12)
     sixdof!(ds, s0, params, time)
     return ds

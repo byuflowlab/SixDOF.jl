@@ -42,21 +42,26 @@ ref = Reference(Sref, bref, cref)
 nothing # hide
 ```
 
-Control inputs need to be as follows:
+A controller builds off the abstract type `AbstractController`, which must supply the following method:
 ```@docs
-Control
+SixDOF.setcontrol
+```
+
+There is a default implementation in the module, which is just a dummy controller that outputs contant control output
+```@docs
+ConstantController
 ```
 
 In this example, we don't use any control deflections.  Just throttle, at 80%.
 ```@example zagi
-control = Control(0.0, 0.0, 0.0, 0.0, 0.8)
+controller = ConstantController(0.0, 0.0, 0.0, 0.0, 0.8)
 nothing # hide
 ```
 
-Next, we define the atmospheric model.  `AtmosphereModel` is an abstract type that must define the following three methods.
+Next, we define the atmospheric model.  `AbstractAtmosphereModel` is an abstract type that must define the following three methods.
 ```@docs
-SixDOF.wind(::AtmosphereModel, ::Any)
-SixDOF.properties(::AtmosphereModel, state)
+SixDOF.wind(::AbstractAtmosphereModel, ::Any)
+SixDOF.properties(::AbstractAtmosphereModel, state)
 SixDOF.gravity
 ```
 There is a default implementation in the module, which is the simplest possible model: one with constant properties:
@@ -82,11 +87,11 @@ All three forces take in all the same inputs, which include everything discussed
 SixDOF.State
 ```
 
-The `AeroModel` abstract type must define the following function:
+The `AbstractAeroModel` abstract type must define the following function:
 ```@docs
-SixDOF.aeroforces(model::AeroModel, atm::AtmosphereModel, state::SixDOF.State, control::Control, mp::MassProp, ref::Reference)
+SixDOF.aeroforces(model::AbstractAeroModel, atm, state, control, mp, ref)
 ```
-The default implementation of `AeroModel` is one based on stability derivatives.
+The default implementation of `AbstractAeroModel` is one based on stability derivatives.
 ```@docs
 StabilityDeriv
 ```
@@ -149,11 +154,11 @@ nothing # hide
 ```
 
 
-The `PropulsionModel` abstract type must define the following function:
+The `AbstractPropulsionModel` abstract type must define the following function:
 ```@docs
-SixDOF.propulsionforces(model::PropulsionModel, atm::AtmosphereModel, state::SixDOF.State, control::Control, mp::MassProp, ref::Reference)
+SixDOF.propulsionforces(model::AbstractPropulsionModel, atm, state, control, mp, ref)
 ```
-The default implementation of `PropulsionModel` is based on a first-order motor model coupled with a parameterized curve fit of propeller data.  The torque for when the motor and propeller are matched is solved for and then used to compute thrust.
+The default implementation of `AbstractPropulsionModel` is based on a first-order motor model coupled with a parameterized curve fit of propeller data.  The torque for when the motor and propeller are matched is solved for and then used to compute thrust.
 ```@docs
 MotorPropBatteryDataFit
 ```
@@ -179,9 +184,9 @@ propulsion = MotorPropBatteryDataFit(CT2, CT1, CT0, CQ2, CQ1, CQ0, D, num, type,
 nothing # hide
 ```
 
-Finally, the `InertialModel` must implment the following function
+Finally, the `AbstractInertialModel` must implment the following function
 ```@docs
-SixDOF.gravityforces(model::InertialModel, atm::AtmosphereModel, state::SixDOF.State, control::Control, mp::MassProp, ref::Reference)
+SixDOF.gravityforces(model::AbstractInertialModel, atm, state, control, mp, ref)
 ```
 
 The default implementation (``UniformGravitationalField``) assumes that the center of mass and center of gravity are coincident and so there is no gravitational moment.  The default will likely be used most of the time as that condition is true for almost all applications, except perhaps some spacecraft in high orbits where small gravitational torques may matter.
@@ -205,7 +210,7 @@ Vinf = U0
 alpha = 3.0*pi/180
 s0 = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Vinf*cos(alpha), 0.0, Vinf*sin(alpha), 0.0, 0.0, 0.0]
 tspan = (0.0, 4.0)
-p = control, mp, ref, sd, propulsion, inertial, atm
+p = mp, ref, sd, propulsion, inertial, atm, controller
 
 
 prob = DifferentialEquations.ODEProblem(sixdof!, s0, tspan, p)

@@ -1,10 +1,12 @@
 module SixDOF
 
-import LinearAlgebra: norm, cross
+using LinearAlgebra: norm, cross
 
 export Control, MassProp, Reference
-export AeroModel, PropulsionModel, InertialModel, AtmosphereModel
-export StabilityDeriv, MotorPropBatteryDataFit, UniformGravitationalField, ConstantAtmosphere
+export AbstractAeroModel, AbstractPropulsionModel, AbstractInertialModel, 
+    AbstractAtmosphereModel, AbstractController
+export StabilityDeriv, MotorPropBatteryDataFit, UniformGravitationalField, 
+    ConstantAtmosphere, ConstantController
 export CO, COUNTER, COCOUNTER
 export sixdof!
 
@@ -87,10 +89,10 @@ end
 
 # --------------- Interfaces ---------------
 
-abstract type AtmosphereModel end
+abstract type AbstractAtmosphereModel end
 
 """
-    wind(model::AtmosphereModel, state)
+    wind(model::AbstractAtmosphereModel, state)
 
 Compute wind velocities.
 
@@ -98,32 +100,32 @@ Compute wind velocities.
 - Wi: wind velocities in inertial frame
 - Wb: gust velocities in body frame (just a convenience to allow some velocities in body frame)
 """
-function wind(model::AtmosphereModel, state)
-    warn("wind function not implemented for AtmosphereModel")
+function wind(model::AbstractAtmosphereModel, state)
+    @warn "wind function not implemented for AbstractAtmosphereModel"
     Wi = [0.0, 0.0, 0.0]
     Wb = [0.0, 0.0, 0.0]
     return Wi, Wb
 end
 
 """
-    properties(model::AtmosphereModel, state)
+    properties(model::AbstractAtmosphereModel, state)
 
 Compute atmospheric density and the speed of sound.
 """
-function properties(model::AtmosphereModel, state)
-    warn("properties function not implemented for AtmosphereModel")
+function properties(model::AbstractAtmosphereModel, state)
+    @warn "properties function not implemented for AbstractAtmosphereModel"
     rho = 1.225  # sea-level properties
     asound = 340.3
     return rho, asound
 end
 
 """
-    gravity(model::AtmosphereModel, state)
+    gravity(model::AbstractAtmosphereModel, state)
 
 Compute the local acceleration of gravity.
 """
-function gravity(model::AtmosphereModel, state)
-    warn("gravity function not implemented for AtmosphereModel")
+function gravity(model::AbstractAtmosphereModel, state)
+    @warn "gravity function not implemented for AbstractAtmosphereModel"
     g = 9.81
     return g
 end
@@ -131,16 +133,16 @@ end
 
 # ----
 
-abstract type AeroModel end
+abstract type AbstractAeroModel end
 
 """
-    aeroforces(model::AeroModel, atm::AtmosphereModel, state::State, control::Control, mp::MassProp, ref::Reference)
+    aeroforces(model::AbstractAeroModel, atm::AbstractAtmosphereModel, state::State, control::Control, mp::MassProp, ref::Reference)
 
 Compute the aerodynamic forces and moments in the body frame.
 return F, M
 """
-function aeroforces(model::AeroModel, atm::AtmosphereModel, state::State, control::Control, mp::MassProp, ref::Reference)
-    warn("aeroforces function not implemented for AeroModel")
+function aeroforces(model::AbstractAeroModel, atm, state, control, mp, ref)
+    @warn "aeroforces function not implemented for AbstractAeroModel"
     # forces and moments in body frame
     F = [0.0, 0.0, 0.0]
     M = [0.0, 0.0, 0.0]
@@ -149,16 +151,16 @@ end
 
 # ----
 
-abstract type PropulsionModel end
+abstract type AbstractPropulsionModel end
 
 """
-    propulsionforces(model::PropulsionModel, atm::AtmosphereModel, state::State, control::Control, mp::MassProp, ref::Reference)
+    propulsionforces(model::AbstractPropulsionModel, atm::AbstractAtmosphereModel, state::State, control::Control, mp::MassProp, ref::Reference)
 
 Compute the propulsive forces and moments in the body frame.
 return F, M
 """
-function propulsionforces(model::PropulsionModel, atm::AtmosphereModel, state::State, control::Control, mp::MassProp, ref::Reference)
-    warn("propulsionforces function not implemented for PropulsionModel")
+function propulsionforces(model::AbstractPropulsionModel, atm, state, control, mp, ref)
+    @warn "propulsionforces function not implemented for AbstractPropulsionModel"
     # forces and moments in body frame
     F = [0.0, 0.0, 0.0]
     M = [0.0, 0.0, 0.0]
@@ -167,20 +169,37 @@ end
 
 # ----
 
-abstract type InertialModel end
+abstract type AbstractInertialModel end
 
 """
-    gravityforces(model::InertialModel, atm::AtmosphereModel, state::State, control::Control, mp::MassProp, ref::Reference)
+    gravityforces(model::AbstractInertialModel, atm::AbstractAtmosphereModel, state::State, control::Control, mp::MassProp, ref::Reference)
 
 Compute the gravitational forces and moments in the body frame.
 return F, M
 """
-function gravityforces(model::InertialModel, atm::AtmosphereModel, state::State, control::Control, mp::MassProp, ref::Reference)
-    warn("gravityforces function not implemented for InertialModel")
+function gravityforces(model::AbstractInertialModel, atm, state, control, mp, ref)
+    @warn "gravityforces function not implemented for AbstractInertialModel"
     # forces and moments in body frame
     F = [0.0, 0.0, 0.0]
     M = [0.0, 0.0, 0.0]
     return F, M
+end
+
+
+# ----
+
+abstract type AbstractController end
+
+"""
+    setcontrol(controller::AbstractController, time, atm::AbstractAtmosphereModel, state::State, lastcontrol::Control, mp::MassProp, ref::Reference)
+
+Compute control state for next time step given current state  
+return control::Control
+"""
+function setcontrol(controller::AbstractController, time, atm, state, mp, ref)
+    @warn "setcontrol function not implemented for AbstractController"
+    control = Control(0.0, 0.0, 0.0, 0.0, 0.0)
+    return control
 end
 
 
@@ -267,7 +286,7 @@ end
 
 
 """
-    windaxes(atm::AtmosphereModel, state)
+    windaxes(atm::AbstractAtmosphereModel, state)
 
 Compute relative velocity in wind axes (airspeed, aoa, sideslip)
 """
@@ -320,7 +339,7 @@ Some less familiar ones include
 - Mcc: crest critical Mach number (when compressibility drag rise starts)
 
 """
-struct StabilityDeriv{TF} <: AeroModel
+struct StabilityDeriv{TF} <: AbstractAeroModel
     CL0::TF
     CLalpha::TF
     CLq::TF
@@ -444,7 +463,7 @@ end
 - i0: motor no-load current
 - voltage: battery voltage
 """
-struct MotorPropBatteryDataFit{TF, TI, PropType} <: PropulsionModel
+struct MotorPropBatteryDataFit{TF, TI, PropType} <: AbstractPropulsionModel
     # CT = CT2*J2 + CT1*J + CT0
     # CQ = CQ2*J2 + CQ1*J + CQ0
     CT2::TF  # prop data fit
@@ -494,8 +513,12 @@ function propulsionforces(prop::MotorPropBatteryDataFit, atm, state, control, re
     return [T, 0, 0], [Q, 0, 0] 
 end
 
+"""
+    UniformGravitationalField()
 
-struct UniformGravitationalField <: InertialModel end  # center of mass and center of gravity are the same
+Assumes center of mass and center of gravity are coincident.
+"""
+struct UniformGravitationalField <: AbstractInertialModel end
 
 function gravityforces(model::UniformGravitationalField, atm, state, control, ref, mp)
 
@@ -515,7 +538,7 @@ end
 
 Constant atmospheric properties.
 """
-struct ConstantAtmosphere{TF, TV<:AbstractVector{TF}} <: AtmosphereModel
+struct ConstantAtmosphere{TF, TV<:AbstractVector{TF}} <: AbstractAtmosphereModel
     Wi::TV
     Wb::TV
     rho::TF
@@ -535,6 +558,24 @@ end
 function gravity(atm::ConstantAtmosphere, state)
     return atm.g
 end
+
+
+"""
+    ConstantController(de, dr, da, df, throttle)
+
+Just a dummy controller that outputs constant control outputs the whole time.
+"""
+struct ConstantController{TF} <: AbstractController
+    de::TF
+    dr::TF
+    da::TF
+    df::TF
+    throttle::TF
+end
+
+function setcontrol(controller::ConstantController, time, atm, state, mp, ref)
+    return Control(controller.de, controller.dr, controller.da, controller.df, controller.throttle)
+end
 # --------------------------------------------------------
 
 
@@ -550,11 +591,14 @@ dynamic and kinematic ODEs.  Follows format used in DifferentialEquations packag
 function sixdof!(ds, s, params, time)
 
     x, y, z, phi, theta, psi, u, v, w, p, q, r = s
-    control, mp, ref, aeromodel, propmodel, inertialmodel, atmmodel = params
+    mp, ref, aeromodel, propmodel, inertialmodel, atmmodel, controller = params
 
-    # --------- forces and moments ---------
+    # ---- controller -------
     state = State(s...)
-
+    control = setcontrol(controller, time, atmmodel, state, mp, ref)
+    # -----------------------
+    
+    # --------- forces and moments ---------
     # aerodynamics
     Fa, Ma = aeroforces(aeromodel, atmmodel, state, control, ref, mp)
 
@@ -602,7 +646,6 @@ function sixdof!(ds, s, params, time)
     ds[7:9] = vdot
     ds[10:12] = omegadot
 end
-
 
 
 end # module
