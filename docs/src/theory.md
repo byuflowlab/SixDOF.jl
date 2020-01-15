@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This nonlinear sixDOF model uses aircraft conventions as that is our target application.  Although the model is fairly general, some extensions may be needed for other applications (derivatives of moment of inertia tensor for morphing aircraft, quaternions and gravitational moments for spacecraft).
+This nonlinear sixDOF model uses aircraft conventions, as that is our target application.  Although the model is fairly general, some extensions may be needed for other applications (e.g. derivatives of moment of inertia tensor for morphing aircraft, or quaternions and gravitational moments for spacecraft).
 
 ## State and Coordinate Systems
 
@@ -24,7 +24,7 @@ We define the angular orientation of the vehicle using Euler angles.  Euler angl
 3. rotate ``\phi`` radians about the new x-axis.
 The resulting rotations will then align with the body axis.  The two coordinate systems will generally still differ by a translation.  For the calculations here, like transfering velocity vectors between the frames, the translation offset is irrelevant.
 
-The resulting rotation matrix from inertial to body is (see Beard and McLain for derivation [^2]:
+The resulting rotation matrix from inertial to body is (see Beard and McLain for derivation [^2]):
 ```math
 R_{i \rightarrow b} = 
 \begin{bmatrix}
@@ -37,7 +37,7 @@ This matrix is orthogonal so its inverse is its transpose.  In other words the r
 ```math
 R_{b \rightarrow i} = R_{i \rightarrow b}^T
 ```
-The downside of Euler angles is that there is a singularity.  For this particular order that singularity occurs at a ``\theta`` (associated with pitch) of ``\pm 90^\circ``.  At that state, the yaw angle is not unique, a phenomenon known as gimbal lock.  The avoid this issue, quaternions are commonly used.  For spacecraft such pitch angles would be normal and thus this would be an important consideration.  For now, we are only simulating aircraft so the simplicity of Euler angles is justified.
+The downside of Euler angles is that there is a singularity.  For this particular order, that singularity occurs at a ``\theta`` (associated with pitch) of ``\pm 90^\circ``.  At that state the yaw angle is not unique, and a phenomenon known as gimbal lock is encountered.  Quaternions are commonly used to avoid gimbal lock.  For spacecraft such pitch angles would be normal, and thus the implementation of quaternions would be an important consideration.  For now, we are only simulating aircraft; so the simplicity of Euler angles is justified.
 
 ## Kinematics and Dynamics
 
@@ -48,7 +48,7 @@ The first two relationships are simply kinematic relationships between positions
 \frac{d \vec{r_i}}{dt} = R_{b \rightarrow i} \vec{V_b}
 ```
 
-Next, we need the derivatives of the Euler angles.  The procedure is the same as above, except that the Euler angles are defined across four different coordinate systems consisting of the body frame, inertial frame, and two intermediate frames between those two (see above definition of Euler angles).  The details are just coordinate transformations, but are a bit tedious and so are not repeated here (see [^2] for derivation).  The result is:
+Next, we need the derivatives of the Euler angles.  The procedure is the same as above, except that the Euler angles are defined across four different coordinate systems consisting of the body frame, inertial frame, and two intermediate frames between those two (see above definition of Euler angles).  The details are just coordinate transformations but are a bit tedious so not repeated here (see [^2] for derivation).  The result is:
 ```math
 \begin{bmatrix}
 \dot{\phi} \\
@@ -135,7 +135,7 @@ We solve for the derivative of the angular velocity:
 ```math
 \frac{d\vec{\omega_b}}{dt_b} = I_b^{-1} \left(\vec{M_b} - \vec{\omega_b} \times I_b \vec{\omega_b} \right)
 ```
-Note, that although a matrix inverse was written, in numerical implementation a linear solve would be used rather than an explicit inversion.
+Note that although a matrix inverse was written, in numerical implementation a linear solve would be used rather than an explicit inversion.
 
 
 ## Forces/Moments
@@ -227,7 +227,7 @@ where the moments are rolling, pitching, and yaw respectively. Note that the rol
 
 ### Aerodynamics (a specific implementation)
 
-Everything up to this point defines the 6DOF simulator.  The aerodynamics, propulsion, and other forces/moments if applicable, are specific to the model choice.  As a simple default a conventional ``linear'' aerodynamics model is included.  This model we use is actually not strictly linear, particuarly in the case of drag, which is fundamentally nonlinear.  Arguably, that addition is negliglbe as aircraft drag typically plays a negligible role in its dynamic behavior.
+Everything up to this point defines the six-DOF simulator.  The aerodynamics, propulsion, and other forces/moments if applicable, are specific to the model choice.  As a simple default a conventional ``linear'' aerodynamics model is included.  This model we use is actually not strictly linear, particuarly in the case of drag, which is fundamentally nonlinear.  Arguably, that addition is negligible as aircraft drag typically plays a negligible role in its dynamic behavior.
 
 
 We define the aerodynamic forces and moments using stability derivatives and control derivatives. The control deflections include ``[\delta f, \delta e, \delta r, \delta a]`` for flaps, elevator, rudder, and aileron respectively.
@@ -236,7 +236,7 @@ For lift:
 ```math
 C_L = {C_L}_0 + \frac{d C_L}{d\alpha}\alpha + \frac{d C_L}{dq} \frac{q c}{2 V_a} + \frac{d C_L}{dM}M + \frac{d C_L}{d \delta f}\delta f + \frac{d C_L}{d \delta e}\delta e
 ```
-where ``Mach`` is the Mach number.  A maximum and minimum ``C_L`` is also enforced (a very crude approximation of stall) via ``{C_L}_{max}`` and ``{C_L}_{min}``.
+where ``M`` is the Mach number.  A maximum and minimum ``C_L`` is also enforced (a very crude approximation of stall) via ``{C_L}_{max}`` and ``{C_L}_{min}``.
 
 Drag is a combination of parasitic, induced, and compressibility drag.  The parasitic drag coefficient is proportional to a skin friction coefficient ``{C_D}_f``, which is Reynolds number dependent.  For laminar flow (Blasisus solution):
 ```math
