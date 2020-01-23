@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This nonlinear sixDOF model uses aircraft conventions, as that is our target application.  Although the model is fairly general, some extensions may be needed for other applications (e.g. derivatives of moment of inertia tensor for morphing aircraft, or quaternions and gravitational moments for spacecraft).
+This nonlinear sixDOF model uses aircraft conventions, as that is our target application.  Although the model is fairly general, some extensions may be needed for other applications (e.g. derivatives of moment of inertia tensor for morphing aircraft, or quaternions and gravitational moments for spacecraft).  The theory in this document is brief. For further background see references like [^2].
 
 ## State and Coordinate Systems
 

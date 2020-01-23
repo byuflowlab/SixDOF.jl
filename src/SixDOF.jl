@@ -639,6 +639,7 @@ function sixdof!(ds, s, params, time)
 
     # -------------------------
 
+    # TODO: if we need more efficiency we can avoid allocating and then assigning.
     ds[1:3] = rdot
     ds[4] = phidot
     ds[5] = thetadot
