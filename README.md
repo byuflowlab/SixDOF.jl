@@ -19,7 +19,7 @@ The dynamics implementation is quite standard and could be used for any rigid bo
 ### Install
 
 ```julia
-pkg> add https://github.com/byuflowlab/SixDOF.jl
+pkg> add SixDOF
 ```
 
 ### Run Unit Tests
