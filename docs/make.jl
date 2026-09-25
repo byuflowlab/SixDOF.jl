@@ -8,10 +8,10 @@ makedocs(;
         "Theory" => "theory.md",
         "Reference frames" => "frames.md",
     ],
-    repo="https://github.com/byuflowlab/SixDOF.jl/blob/{commit}{path}#L{line}",
     sitename="SixDOF.jl",
     authors="Andrew Ning <aning@byu.edu>",
-    # assets=String[],
+    checkdocs=:exports,
+    warnonly=[:missing_docs],
 )
 
 deploydocs(
