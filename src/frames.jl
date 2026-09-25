@@ -119,6 +119,20 @@ Base.convert(::Type{ReferenceFrame{TF}}, f::ReferenceFrame) where TF =
     ReferenceFrame{TF}(f)
 
 """
+    ReferenceFrame(f::ReferenceFrame; x, v, omega_axis, omega, R)
+
+A copy of `f` with the given fields replaced (all in the parent frame). This is
+how a maneuver changes a frame's motion between steps, since frames are
+immutable: `frames[1] = ReferenceFrame(frames[1]; omega = 0.2)`.
+"""
+function ReferenceFrame(f::ReferenceFrame{TF}; x = f.x, v = f.v, omega_axis = f.omega_axis,
+                        omega = f.omega, R = f.R) where TF
+    return ReferenceFrame{TF}(SVector{3,TF}(x), SVector{3,TF}(v), _unit(SVector{3,TF}(omega_axis)),
+                              TF(omega), SMatrix{3,3,TF,9}(R), f.Rp2g, f.name, f.parent_index,
+                              f.child_index, f.dependent_index)
+end
+
+"""
     ReferenceFrame(geometries; kwargs...)
 
 Build the root frame of a kinematic tree and return it as a one-element

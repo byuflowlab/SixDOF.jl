@@ -38,6 +38,8 @@ end
     j = add_frame!(frames, "tip", "arm", ex, [1])
     @test frames[2].dependent_index == [2, 1] && frames[1].dependent_index == [2, 1]
     @test_throws ArgumentError frame_index(frames, "none")
+    g = ReferenceFrame(frames[2]; omega = 5.0, v = ex)
+    @test g.omega == 5.0 && g.v == ex && g.x == frames[2].x && g.child_index === frames[2].child_index
     @test SixDOF.owns(frames, 1) && !SixDOF.owns(ReferenceFrame(bodies; dependent_index = Int[]), 1)
 end
 
