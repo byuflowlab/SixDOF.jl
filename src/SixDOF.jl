@@ -11,10 +11,10 @@ export StabilityDeriv, MotorPropBatteryDataFit, UniformGravitationalField,
 export CO, COUNTER, COCOUNTER
 export sixdof!
 
-# the kinematic tree shared by the aerodynamic solvers (src/frames.jl)
-export ReferenceFrame, rotor_frames, add_frame!, frame_index, frame_motion, point_velocity, owns
+# the kinematic frame tree shared by the aerodynamic solvers (src/frames.jl);
+# the body protocol `SixDOF.move` / `SixDOF.spin` is extended by qualified name and not exported
+export ReferenceFrame, rotor_frames, add_frame!, frame_index, frame_motion, point_velocity
 export Rodrigues, inverse_Rodrigues, propagate_kinematics!
-export move, spin
 include("frames.jl")
 
 

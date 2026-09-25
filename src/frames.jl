@@ -5,30 +5,33 @@ vehicle, children are rotors, wings, anything that moves relative to its
 parent. The tree knows nothing about the bodies it moves: each body type
 implements the two-function protocol below.
 
-    move(body, origin, R, dx) -> body      rotate about `origin` by `R`, then translate by `dx`
-    spin(body) -> nothing | (origin, axis)  where a body spins in place, for `rotor_frames`
+    SixDOF.move(body, origin, R, dx) -> body      rotate about `origin` by `R`, then translate by `dx`
+    SixDOF.spin(body) -> nothing | (origin, axis)  where a body spins in place, for `rotor_frames`
 
-and `eltype(body)` gives its number type. A solver takes the motion of a body
+and `eltype(body)` gives its number type. The two are deliberately not
+exported: a solver extends them by qualified name and never calls them itself. A solver takes the motion of a body
 from [`frame_motion`](@ref) or the velocity of one of its points from
 [`point_velocity`](@ref); a body moving at `U` sees fluid velocity `-U`.
 =#
 
 """
-    move(body, origin, R, dx)
+    SixDOF.move(body, origin, R, dx)
 
 Rigid motion of a body: rotate it about the global point `origin` by the
 rotation matrix `R`, then translate it by `dx`; return the moved body (which may
 be the same object mutated, or a new immutable wrapper). Every body type the
-frame tree moves adds a method.
+frame tree moves adds a method, `function SixDOF.move(b::MyBody, origin, R, dx)`;
+[`propagate_kinematics!`](@ref) is the only caller. Not exported.
 """
 function move end
 
 """
-    spin(body)
+    SixDOF.spin(body)
 
 `nothing` for a body that does not spin in place, or `(origin, axis)` in global
 coordinates for one that does (a rotor: its hub and shaft axis). Used by
-[`rotor_frames`](@ref); the default is `nothing`.
+[`rotor_frames`](@ref); the default is `nothing`, so only spinning bodies add
+a method. Not exported.
 """
 spin(::Any) = nothing
 
@@ -321,9 +324,9 @@ function point_velocity(frames::Vector{<:ReferenceFrame}, geometry_index::Int, p
 end
 
 """
-    owns(frames, geometry_index)
+    SixDOF.owns(frames, geometry_index)
 
-Whether any frame of the tree owns geometry `geometry_index`.
+Whether any frame of the tree owns geometry `geometry_index`. Not exported.
 """
 owns(frames::Vector{<:ReferenceFrame}, geometry_index::Int) =
     !isempty(frames) && geometry_index in frames[1].dependent_index

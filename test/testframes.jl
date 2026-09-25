@@ -38,7 +38,7 @@ end
     j = add_frame!(frames, "tip", "arm", ex, [1])
     @test frames[2].dependent_index == [2, 1] && frames[1].dependent_index == [2, 1]
     @test_throws ArgumentError frame_index(frames, "none")
-    @test owns(frames, 1) && !owns(ReferenceFrame(bodies; dependent_index = Int[]), 1)
+    @test SixDOF.owns(frames, 1) && !SixDOF.owns(ReferenceFrame(bodies; dependent_index = Int[]), 1)
 end
 
 @testset "rotor_frames" begin

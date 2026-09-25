@@ -16,6 +16,10 @@ The dynamics implementation is quite standard and could be used for any rigid bo
 - gravity: center of mass and center of gravity are coincident (constant gravitational field across the body).
 - atmosphere: constant properties throughout trajectory.
 
+### Reference frames
+
+The package also holds a rigid-body kinematic tree (`ReferenceFrame`, `add_frame!`, `rotor_frames`, `propagate_kinematics!`, `frame_motion`) shared by the FLOW Lab aerodynamic solvers (LiftingLines.jl, VortexLattice.jl, FLOWPanel.jl), so bodies from different solvers move together in one simulation. A body type joins the tree by extending `SixDOF.move` and, if it spins in place, `SixDOF.spin`; see the Reference frames page of the documentation.
+
 ### Install
 
 ```julia

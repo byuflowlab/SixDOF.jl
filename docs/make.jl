@@ -6,6 +6,7 @@ makedocs(;
     pages=[
         "Guide" => "guide.md",
         "Theory" => "theory.md",
+        "Reference frames" => "frames.md",
     ],
     repo="https://github.com/byuflowlab/SixDOF.jl/blob/{commit}{path}#L{line}",
     sitename="SixDOF.jl",
