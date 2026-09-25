@@ -31,7 +31,9 @@ add_frame!(frames, "rotor", 1, [1.0, 0.0, 0.0], [1]; omega_axis = [1.0, 0.0, 0.0
 ```
 
 `rotor_frames(bodies; omega)` builds the same thing for every body that
-[`SixDOF.spin`](@ref)s.
+[`SixDOF.spin`](@ref)s. `examples/frames.jl` is a complete, runnable version:
+a minimal body type, a vehicle with two counter-rotating rotors, one
+revolution of motion and the motion of each body read back from the tree.
 
 ## Moving the bodies
 
