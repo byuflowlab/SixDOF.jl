@@ -43,6 +43,9 @@ Rotation matrix for a right-handed rotation of `angle` [rad] about the unit
 vector `axis`.
 """
 function Rodrigues(axis, angle::TF) where TF
+    # no axis, no rotation: the formula would otherwise return cos(angle) * I,
+    # a scaling, for a frame whose rate has no direction
+    iszero(axis[1]) && iszero(axis[2]) && iszero(axis[3]) && return one(SMatrix{3,3,TF,9})
     s, c = sincos(angle)
     t = one(TF) - c
     x, y, z = axis
@@ -215,7 +218,11 @@ function rotor_frames(geometries::AbstractVector; omega, kwargs...)
     for (i, g) in enumerate(geometries)
         sp = spin(g)
         if sp !== nothing
-            add_frame!(frames, "rotor_$i", 1, sp[1], [i]; omega_axis = sp[2], omega = om[i])
+            # `spin` reports the hub and axis in GLOBAL coordinates; a child frame
+            # takes its origin and axis in the parent's
+            root = frames[1]
+            add_frame!(frames, "rotor_$i", 1, root.R' * (SVector{3}(sp[1]) - root.x), [i];
+                       omega_axis = root.R' * SVector{3}(sp[2]), omega = om[i])
         else
             push!(root_dependents, i)
         end

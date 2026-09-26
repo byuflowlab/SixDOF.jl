@@ -640,7 +640,7 @@ function sixdof!(ds, s, params, time)
 
     # angular dynamics
     I = [mp.Ixx -mp.Ixy -mp.Ixz;
-         -mp.Iyz mp.Iyy -mp.Iyz;
+         -mp.Ixy mp.Iyy -mp.Iyz;
          -mp.Ixz -mp.Iyz mp.Izz]
     omegadot = I \ (M - cross(omegab, I*omegab))
 

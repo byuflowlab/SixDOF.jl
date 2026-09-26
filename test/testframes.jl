@@ -78,3 +78,18 @@ end
     @test w ≈ 3ez && v ≈ cross(2ez, ex)
     @test_throws ArgumentError frame_motion(fr, 2)
 end
+
+@testset "rotor_frames on a yawed root; a zero axis is no rotation" begin
+    # a body whose spin is reported in global coordinates, under a root yawed 90 deg
+    struct Spinner; hub::SVector{3,Float64}; axis::SVector{3,Float64}; end
+    Base.eltype(::Spinner) = Float64
+    SixDOF.spin(s::Spinner) = (s.hub, s.axis)
+    SixDOF.move(s::Spinner, origin, R, dx) = Spinner(R * (s.hub - origin) + origin + dx, R * s.axis)
+    yaw = SixDOF.Rodrigues(SVector(0.0, 0.0, 1.0), pi / 2)
+    g = Any[Spinner(SVector(1.0, 0.0, 0.0), SVector(1.0, 0.0, 0.0))]
+    fr = SixDOF.rotor_frames(g; omega = 10.0, R = yaw, origin = SVector(0.0, 0.0, 5.0))
+    o, v, w = SixDOF.frame_motion(fr, 1)
+    @test o ≈ SVector(1.0, 0.0, 0.0) atol = 1e-12          # the hub stays where the body reported it
+    @test w ≈ SVector(10.0, 0.0, 0.0) atol = 1e-12          # and spins about the reported global axis
+    @test SixDOF.Rodrigues(SVector(0.0, 0.0, 0.0), 0.7) == one(SMatrix{3,3,Float64,9})
+end
