@@ -9,6 +9,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write      # Documenter deploys gh-pages with the GITHUB_TOKEN (the 2019 DOCUMENTER_KEY has no deploy key on the repo)
     steps:
       - uses: actions/checkout@v4
       - uses: julia-actions/setup-julia@v2
@@ -20,5 +22,4 @@ jobs:
       - name: Build and deploy
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          DOCUMENTER_KEY: ${{ secrets.DOCUMENTER_KEY }}
         run: julia --project=docs/ docs/make.jl
